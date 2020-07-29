@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface UserService {
-    List<Users> getUsers();
+    List<Users> getUsers(int page, int limit);
 
     void createUser(Users user);
 
@@ -15,4 +15,5 @@ public interface UserService {
     void updateUser(Users user);
 
     void deleteUser(Long id);
+
 }

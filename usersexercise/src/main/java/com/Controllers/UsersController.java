@@ -18,14 +18,17 @@ public class UsersController {
     }
 
     @GetMapping
-    public List<Users> getUsers(){
-        List<Users> returnValue = userservice.getUsers();
+    public List<Users> getUsers(@RequestParam(value = "page", defaultValue = "1") int page,
+                                @RequestParam(value = "limit", defaultValue = "3") int limit){
+        List<Users> returnValue = userservice.getUsers(page, limit);
         return returnValue;
     }
+
     @PostMapping
     public void createUser(@RequestBody Users user){
         userservice.createUser(user);
     }
+
     @GetMapping(path = "/{id}")
     public Optional<Users> getUsers(@PathVariable Long id){
         Optional<Users> returnValue = userservice.getUser(id);

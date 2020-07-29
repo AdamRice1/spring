@@ -2,8 +2,11 @@ package com.Services.Implementations;
 
 import com.Services.UserService;
 import com.dao.UserRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import com.Model.Users;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.*;
 
@@ -18,11 +21,13 @@ public class UserServiceImplementation implements UserService {
 
 
     @Override
-    public List<Users> getUsers() {
-        List<Users> returnValue = new ArrayList<Users>();
-
-        returnValue = (List<Users>) userrepository.findAll();
-
+    public List<Users> getUsers(int page, int limit) {
+        List<Users> returnValue;
+        if (page > 0 ) page--;
+        Pageable request = PageRequest.of(page, limit);
+        Page<Users> usersPage = userrepository.findAll(request);
+        returnValue = usersPage.getContent();
+        System.out.println(returnValue);
         return returnValue;
     }
 
