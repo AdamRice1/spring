@@ -1,7 +1,12 @@
 package com.Services.Implementations;
 
+import com.ExceptionHandler.ApiException;
+import com.ExceptionHandler.ApiRequestException;
+import com.Model.Response.UserResponse;
 import com.Services.UserService;
 import com.dao.UserRepository;
+import com.dto.UserDto;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -21,45 +26,95 @@ public class UserServiceImplementation implements UserService {
 
 
     @Override
-    public List<Users> getUsers(int page, int limit) {
+    public List<UserDto> getUsers(int page, int limit) {
         List<Users> returnValue;
         if (page > 0 ) page--;
         Pageable request = PageRequest.of(page, limit);
         Page<Users> usersPage = userrepository.findAll(request);
         returnValue = usersPage.getContent();
-        System.out.println(returnValue);
-        return returnValue;
+        ArrayList<UserDto> userDtoArrayList = new ArrayList<UserDto>();
+        for(Object x : returnValue){
+            UserDto target = new UserDto();
+            BeanUtils.copyProperties(x, target);
+            userDtoArrayList.add(target);
+        }
+        System.out.println(userDtoArrayList.get(0).getId() + " This is the return Value");
+        return userDtoArrayList;
     }
 
     @Override
-    public void createUser(Users user) {
-        userrepository.save(user);
+    public UserDto createUser(UserDto userdto) {
+        if(userdto.getEmail() == null) throw new ApiRequestException("Most Have an Email");
+        Users newUser = new Users();
+        BeanUtils.copyProperties(userdto, newUser);
+        Users currentUser = userrepository.save(newUser);
+        UserDto returnUser = new UserDto();
+        BeanUtils.copyProperties(currentUser, returnUser);
+        return returnUser;
     }
 
     @Override
-    public Optional<Users> getUser(Long id) {
-        Optional<Users> returnValue = userrepository.findById(id);
-        return returnValue;
-    }
-
-    @Override
-    public Optional<Users> getUsersByEmail(String email) {
-        Optional<Users> returnValue = Optional.ofNullable(userrepository.findByEmail(email));
-        return returnValue;
-    }
-
-    @Override
-    public void updateUser(Users user) {
+    public UserResponse getUser(Long id) {
         ArrayList<Users> users = (ArrayList<Users>) userrepository.findAll();
-        for (int i = 0; i < users.size(); i++) {
-            if (users.get(i).getId() == user.getId()) {
-                userrepository.save(user);
+        UserResponse userResponse = new UserResponse();
+        for(int i =0; i < users.size(); i++){
+            if(users.get(i).getId().equals(id)){
+                BeanUtils.copyProperties(users.get(i), userResponse);
+                return userResponse;
             }
         }
+
+        throw new ApiRequestException("ID did not match any in the database");
+    }
+
+    @Override
+    public UserResponse getUsersByEmail(String email) {
+        ArrayList<Users> users = (ArrayList<Users>) userrepository.findAll();
+        UserResponse currentUser = new UserResponse();
+        for(int i = 0; i < users.size(); i++){
+            if(users.get(i).getEmail().equals(email)){
+                BeanUtils.copyProperties(users.get(i), currentUser);
+                System.out.println("We are in the user email section");
+                return currentUser;
+            }
+        }
+        throw new ApiRequestException("Email did not match any in the database");
+    }
+
+    @Override
+    public UserResponse updateUser(Users user) {
+        ArrayList<Users> users = (ArrayList<Users>) userrepository.findAll();
+        UserResponse currentUser = new UserResponse();
+        for (int i = 0; i < users.size(); i++) {
+            System.out.println("In the for");
+            if (users.get(i).getId().equals(user.getId())) {
+                userrepository.save(user);
+                System.out.println(user + " This is the user");
+                BeanUtils.copyProperties(user, currentUser);
+                System.out.println(currentUser + " This is what should be returned");
+                return currentUser;
+            }
+        }
+        throw new ApiRequestException("It Appears that user does not exist.");
     }
 
     @Override
     public void deleteUser(Long id) {
+        if(userrepository.findById(id) == null) throw new ApiRequestException("That User Doesn't Exist.");
         userrepository.deleteById(id);
     }
+
+    @Override
+    public List<UserResponse> getAllUsers() {
+        List<Users> returnValue;
+        ArrayList<UserResponse> userResponses = new ArrayList<UserResponse>();
+        returnValue = (List<Users>) userrepository.findAll();
+        for(Object x : returnValue){
+            UserResponse target = new UserResponse();
+            BeanUtils.copyProperties(x, target);
+            userResponses.add(target);
+        }
+        return userResponses;
+    }
+
 }

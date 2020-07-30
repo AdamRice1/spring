@@ -1,19 +1,23 @@
 package com.Services;
+import com.Model.Response.UserResponse;
 import com.Model.Users;
+import com.dto.UserDto;
+
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 public interface UserService {
-    List<Users> getUsers(int page, int limit);
+    List<UserDto> getUsers(int page, int limit);
 
-    void createUser(Users user);
+    UserDto createUser(UserDto userdto);
 
-    Optional<Users> getUser(Long id);
+    UserResponse getUser(Long id);
 
-    Optional<Users> getUsersByEmail(String email);
+    UserResponse getUsersByEmail(String email);
 
-    void updateUser(Users user);
+    UserResponse updateUser(Users user);
 
     void deleteUser(Long id);
 
+    List<UserResponse> getAllUsers();
 }
